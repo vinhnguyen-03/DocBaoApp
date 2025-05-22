@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DocBaoApp</string>
+
+    <string name="api_key">251ea2e5b8b14a68a20a78434130d20a</string>
 </resources>
