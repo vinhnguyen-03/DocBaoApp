@@ -22,7 +22,6 @@ import com.example.docbaoapp.Models.NewsHeadlines;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SelectListener, View.OnClickListener {
-    //Đã thêm một đoạn
     RecyclerView recyclerView;
     CustomAdapter adapter;
     ProgressDialog dialog;
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements SelectListener, V
     SearchView searchView;
 
     //vinh
-
+    //khanh
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
