@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements SelectListener, V
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                dialog.setTitle("Fetching news articles of " + query);
+                dialog.setTitle("Đang lấy các bài viết tức thời của " + query);
                 dialog.show();
                 RequestManager manager = new RequestManager(MainActivity.this);
                 manager.getNewsHeadlines(listener, "general", query);
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements SelectListener, V
         });
 
         dialog = new ProgressDialog(this);
-        dialog.setTitle("Fetching news articles...");
+        dialog.setTitle("Đang tải bài viết tin tức...");
         dialog.show();
 
         btn_1 = findViewById(R.id.btn_1);
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements SelectListener, V
         @Override
         public void onError(String message) {
 
-            Toast.makeText(MainActivity.this, "An Error Occurred!!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Đã xảy ra lỗi!!!", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements SelectListener, V
     public void onClick(View v) {
         Button button = (Button) v;
         String category = button.getText().toString();
-        dialog.setTitle("Fetching news articles of " + category);
+        dialog.setTitle("Đang tải các bài viết tin tức của " + category);
         dialog.show();
         RequestManager manager = new RequestManager(this);
         manager.getNewsHeadlines(listener, "category", null);
