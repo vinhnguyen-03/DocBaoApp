@@ -5,5 +5,7 @@
     <color name="yellow">#FFFFEB3B</color>
     <color name="purple_500">#FF6200EE</color>
 
+    <color name="my_primary">#008978</color>
+    <color name="my_secondary">#009688</color>
 
 </resources>
