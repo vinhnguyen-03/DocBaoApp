@@ -105,12 +105,12 @@
           </androidx.appcompat.widget.SearchView>
      </androidx.cardview.widget.CardView>
 
-     <androidx.recyclerview.widget.RecyclerView
-         android:id="@+id/recycler_main"
+     <ListView
+         android:id="@+id/lvTieuDe"
          android:layout_margin="8dp"
          android:layout_width="match_parent"
          android:layout_height="match_parent">
 
-     </androidx.recyclerview.widget.RecyclerView>
+     </ListView>
 
 </LinearLayout>

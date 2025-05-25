@@ -2,121 +2,101 @@ package com.example.docbaoapp;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.docbaoapp.Models.NewsApiResponse;
-import com.example.docbaoapp.Models.NewsHeadlines;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SelectListener, View.OnClickListener {
-    RecyclerView recyclerView;
-    CustomAdapter adapter;
-    ProgressDialog dialog;
-    Button btn_1, btn_2, btn_3, btn_4, btn_5, btn_6, btn_7;
-    SearchView searchView;
-
-    //vinh
-    //khanh
+public class MainActivity extends AppCompatActivity {
+    ListView lvTieuDe;
+    ArrayList<String> arrayTitle, arrayLink;
+    ArrayAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        searchView = findViewById(R.id.search_view);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                dialog.setTitle("Đang lấy các bài viết tức thời của " + query);
-                dialog.show();
-                RequestManager manager = new RequestManager(MainActivity.this);
-                manager.getNewsHeadlines(listener, "general", query);
-                return true;
-            }
+        lvTieuDe= (ListView) findViewById(R.id.lvTieuDe);
+        arrayTitle = new ArrayList<>();
+        arrayLink = new ArrayList<>();
 
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayTitle);
+        lvTieuDe.setAdapter(adapter);
+
+        new ReadRSS().execute("https://vnexpress.net/rss/giai-tri.rss");
+        lvTieuDe.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("linkTinTuc", arrayLink.get(position));
+                startActivity(intent);
             }
         });
-
-        dialog = new ProgressDialog(this);
-        dialog.setTitle("Đang tải bài viết tin tức...");
-        dialog.show();
-
-        btn_1 = findViewById(R.id.btn_1);
-        btn_1.setOnClickListener(this);
-        btn_2 = findViewById(R.id.btn_2);
-        btn_2.setOnClickListener(this);
-        btn_3 = findViewById(R.id.btn_3);
-        btn_3.setOnClickListener(this);
-        btn_4 = findViewById(R.id.btn_4);
-        btn_4.setOnClickListener(this);
-        btn_5 = findViewById(R.id.btn_5);
-        btn_5.setOnClickListener(this);
-        btn_6 = findViewById(R.id.btn_6);
-        btn_6.setOnClickListener(this);
-        btn_7 = findViewById(R.id.btn_7);
-        btn_7.setOnClickListener(this);
-
-
-        RequestManager manager = new RequestManager(this);
-        manager.getNewsHeadlines(listener, "general", null);
     }
-    private final OnFetchDataListener<NewsApiResponse> listener = new OnFetchDataListener<NewsApiResponse>() {
+
+    private class ReadRSS extends AsyncTask<String, Void, String> {
         @Override
-        public void onFetchData(List<NewsHeadlines> list, String message) {
+        protected String doInBackground(String... strings){
+            StringBuilder content = new StringBuilder();
+            try {
+                URL url = new URL(strings[0]);
 
-            if (list.isEmpty()) {
-                Toast.makeText(MainActivity.this, "No data found!!!", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                showNews(list);
-                dialog.dismiss();
-            }
+                InputStreamReader inputStreamReader = new InputStreamReader(url.openConnection().getInputStream());
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String line = "";
+                // khi nao con doc duoc se chay
+                while ((line = bufferedReader.readLine()) !=null){
+                    content.append(line);
+                }
+                bufferedReader.close();
 
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return content.toString();
         }
         @Override
-        public void onError(String message) {
+        protected void onPostExecute(String s){
+            super.onPostExecute(s);
+            XMLDOMParser parser = new XMLDOMParser();
+            Document document = parser.getDocument(s);
+            NodeList nodeList = document.getElementsByTagName("item");
 
-            Toast.makeText(MainActivity.this, "Đã xảy ra lỗi!!!", Toast.LENGTH_SHORT).show();
+            String tieuDe = "";
+            for (int i =0; i < nodeList.getLength(); i++){
+                Element element = (Element) nodeList.item(i);
+
+                tieuDe = parser.getValue(element, "title");
+                arrayTitle.add(tieuDe);
+                arrayLink.add(parser.getValue(element, "link"));
+            }
+            adapter.notifyDataSetChanged();
+
         }
-    };
-
-    private void showNews(List<NewsHeadlines> list) {
-        recyclerView = findViewById(R.id.recycler_main);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
-        adapter = new CustomAdapter(this, list, this);
-        recyclerView.setAdapter(adapter);
-    }
-
-    @Override
-    public void OnNewsClicked(NewsHeadlines headlines) {
-
-        startActivity(new Intent(MainActivity.this, DetailsActivity.class)
-                .putExtra("data", headlines));
-    }
-
-    @Override
-    public void onClick(View v) {
-        Button button = (Button) v;
-        String category = button.getText().toString();
-        dialog.setTitle("Đang tải các bài viết tin tức của " + category);
-        dialog.show();
-        RequestManager manager = new RequestManager(this);
-        manager.getNewsHeadlines(listener, "category", null);
     }
 }
